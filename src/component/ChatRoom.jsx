@@ -19,7 +19,8 @@ const ChatRoom = ({ username, room }) => {
         id: crypto.randomUUID(),
       };
       socket.emit("send_message", messageReady);
-
+      // Show message instantly
+      setMessages((prev) => [...prev, messageReady]);
       //   setMessages([...messages, { text: message, user: username }]);
       setMessage("");
     }
@@ -35,14 +36,21 @@ const ChatRoom = ({ username, room }) => {
       setMessages((prev) => [...prev, data]);
     });
 
+    socket.on("typing_user", (user) => {
+      if (user === username) return;
+      setTyping(`${user} is typing...........`);
+      console.log("send to server typing: ", user);
+      setTimeout(() => setTyping(""), 2000);
+    });
+
     return () => {
       socket.off("receive_message");
+      socket.off("typing_user");
     };
   }, [room]);
 
   const typingHandle = () => {
     socket.emit("typing", { username, room });
-    console.log(username, room);
   };
 
   return (
@@ -80,7 +88,7 @@ const ChatRoom = ({ username, room }) => {
 
           <div ref={endMsgShow}></div>
         </div>
-
+        <p>{typing}</p>
         {/* Input Bar */}
         <div className="flex items-center gap-3 p-3 border-t bg-white">
           <input
