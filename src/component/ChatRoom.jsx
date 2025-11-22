@@ -1,15 +1,44 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
 
+const socket = io("http://localhost:4000");
 const ChatRoom = ({ username, room }) => {
   const [message, setMessage] = useState("");
+  const [typing, setTyping] = useState("");
   const [messages, setMessages] = useState([]);
 
-  const handleSend = () => {
-    if (message.trim()) return;
+  const endMsgShow = useRef(null);
 
-    setMessages([...messages, { text: message, user: username }]);
-    setMessage("");
+  const handleSend = () => {
+    if (message.trim()) {
+      const messageReady = {
+        room,
+        message,
+        author: username,
+        date: new Date().toLocaleDateString(),
+        id: crypto.randomUUID(),
+      };
+      socket.emit("send_message", messageReady);
+      console.log("a");
+      //   setMessages([...messages, { text: message, user: username }]);
+      setMessage("");
+    }
   };
+
+  useEffect(() => {
+    endMsgShow.current?.scrollIntoView({ behavior: "smooth" });
+  });
+  useEffect(() => {
+    socket.emit("join_room", room);
+    socket.on("receive_message", (data) => {
+      console.log(" server from data: ", data);
+      setMessages((prev) => [...prev, data]);
+    });
+
+    return () => {
+      socket.off("receive_message");
+    };
+  }, [room]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
@@ -29,20 +58,22 @@ const ChatRoom = ({ username, room }) => {
             <div
               key={index}
               className={`flex ${
-                msg.user === username ? "justify-end" : "justify-start"
+                msg.author === username ? "justify-end" : "justify-start"
               }`}
             >
               <div
                 className={`px-4 py-2 rounded-xl max-w-xs text-sm shadow-sm ${
-                  msg.user === username
+                  msg.author === username
                     ? "bg-blue-600 text-white rounded-br-none"
                     : "bg-gray-200 text-gray-800 rounded-bl-none"
                 }`}
               >
-                {msg.text}
+                {msg.message}
               </div>
             </div>
           ))}
+
+          <div ref={endMsgShow}></div>
         </div>
 
         {/* Input Bar */}
@@ -51,6 +82,7 @@ const ChatRoom = ({ username, room }) => {
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
           />
