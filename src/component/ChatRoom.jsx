@@ -19,7 +19,7 @@ const ChatRoom = ({ username, room }) => {
         id: crypto.randomUUID(),
       };
       socket.emit("send_message", messageReady);
-      console.log("a");
+
       //   setMessages([...messages, { text: message, user: username }]);
       setMessage("");
     }
@@ -31,7 +31,7 @@ const ChatRoom = ({ username, room }) => {
   useEffect(() => {
     socket.emit("join_room", room);
     socket.on("receive_message", (data) => {
-      console.log(" server from data: ", data);
+      //   console.log(" server from data: ", data);
       setMessages((prev) => [...prev, data]);
     });
 
@@ -39,6 +39,11 @@ const ChatRoom = ({ username, room }) => {
       socket.off("receive_message");
     };
   }, [room]);
+
+  const typingHandle = () => {
+    socket.emit("typing", { username, room });
+    console.log(username, room);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
@@ -81,7 +86,10 @@ const ChatRoom = ({ username, room }) => {
           <input
             type="text"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              typingHandle();
+            }}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
