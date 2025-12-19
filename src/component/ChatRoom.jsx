@@ -58,7 +58,7 @@ const ChatRoom = ({ username, room }) => {
       {/* Chat Header */}
       <div className="w-full max-w-xl bg-white shadow-md rounded-xl p-4 mb-4">
         <h1 className="text-lg font-bold text-gray-700">
-          Room: <span className="text-blue-600">{room}</span>
+          Room Id: <span className="text-blue-600">{room}</span>
         </h1>
         <p className="text-sm text-gray-500">Logged in as {username}</p>
       </div>
@@ -75,7 +75,7 @@ const ChatRoom = ({ username, room }) => {
               }`}
             >
               <div
-                className={`px-4 py-2 rounded-xl max-w-xs text-sm shadow-sm ${
+                className={`px-4 py-3 rounded-xl max-w-xs text-sm shadow-sm ${
                   msg.author === username
                     ? "bg-blue-600 text-white rounded-br-none"
                     : "bg-gray-200 text-gray-800 rounded-bl-none"
@@ -107,7 +107,7 @@ const ChatRoom = ({ username, room }) => {
             onClick={handleSend}
             className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
           >
-            Send
+            Send message
           </button>
         </div>
       </div>
